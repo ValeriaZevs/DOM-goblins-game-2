@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy with Debug
 
 on:
   push:
@@ -8,19 +8,42 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     
-    - uses: actions/setup-node@v2
+    - name: Setup Node
+      uses: actions/setup-node@v2
       with:
         node-version: '14'
     
-    - run: npm install
-    - run: npm run build
+    - name: Debug - Show structure
+      run: |
+        echo "=== Project structure ==="
+        ls -la
+        echo "=== package.json ==="
+        cat package.json | head -30
+    
+    - name: Install dependencies
+      run: |
+        echo "=== Installing dependencies ==="
+        npm install
+        echo "=== Done installing ==="
+    
+    - name: Try lint (continue on error)
+      run: npm run lint || echo "Lint failed but continuing..."
+    
+    - name: Try tests (continue on error)
+      run: npm test || echo "Tests failed but continuing..."
+    
+    - name: Build
+      run: |
+        echo "=== Building project ==="
+        npm run build
+        echo "=== Build complete ==="
+        ls -la dist/
     
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist
-        user_name: 'github-actions[bot]'
-        user_email: 'github-actions[bot]@users.noreply.github.com'
