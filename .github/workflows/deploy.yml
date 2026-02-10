@@ -1,45 +1,48 @@
-name: Build and Deploy
+cat > .github/workflows/deploy.yml << 'EOF'
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
-  build:
-    runs-on: ubuntu-20.04
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5  # Ограничиваем время выполнения
+    
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Use Node.js 14
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14.x'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build
-      run: npm run build
-    
-    - name: Upload production-ready build files
-      uses: actions/upload-artifact@v2
-      with:
-        name: production-files
-        path: ./dist
-  
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-20.04
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: production-files
-        path: ./dist
-    
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
+      # Шаг 1: Получаем код
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Шаг 2: Настраиваем Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+      
+      # Шаг 3: Устанавливаем зависимости (быстро, без тестов)
+      - name: Install dependencies
+        run: |
+          echo "Устанавливаем зависимости..."
+          npm ci --only=production
+          echo "Зависимости установлены!"
+      
+      # Шаг 4: Собираем проект
+      - name: Build project
+        run: |
+          echo "Собираем проект..."
+          npm run build
+          echo "Сборка завершена!"
+          ls -la dist/
+      
+      # Шаг 5: Деплоим на GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+EOF
