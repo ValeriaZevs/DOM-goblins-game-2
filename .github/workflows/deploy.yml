@@ -1,25 +1,81 @@
-name: Deploy
+name: Debug Build Process
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  debug-build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v2
-      
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      
-      - run: npm install
-      - run: npm run build
-      
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+    - name: 🚨 SHOW ERROR - Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 🚨 SHOW ERROR - Debug Files
+      run: |
+        echo "=== PROJECT STRUCTURE ==="
+        ls -la
+        echo ""
+        echo "=== PACKAGE.JSON ==="
+        cat package.json
+        echo ""
+        echo "=== WEBPACK.CONFIG.JS ==="
+        cat webpack.config.js 2>/dev/null || echo "No webpack.config.js"
+        echo ""
+        echo "=== SRC FOLDER ==="
+        ls -la src/
+    
+    - name: 🚨 SHOW ERROR - Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: 🚨 SHOW ERROR - Try npm install
+      run: |
+        echo "=== TRYING NPM INSTALL ==="
+        npm install || echo "❌ npm install failed"
+        echo "=== NODE MODULES CREATED? ==="
+        ls -la node_modules/ || echo "No node_modules folder"
+    
+    - name: 🚨 SHOW ERROR - Try npm ci
+      continue-on-error: true
+      run: |
+        echo "=== TRYING NPM CI ==="
+        npm ci || echo "❌ npm ci failed"
+    
+    - name: 🚨 SHOW ERROR - Check npm version
+      run: |
+        echo "=== NPM VERSION ==="
+        npm --version
+        node --version
+    
+    - name: 🚨 SHOW ERROR - Try building
+      run: |
+        echo "=== TRYING TO BUILD ==="
+        npm run build 2>&1 || echo "❌ Build failed"
+        echo "=== DIST FOLDER ==="
+        ls -la dist/ 2>/dev/null || echo "No dist folder"
+    
+    - name: 🚨 SHOW ERROR - Create minimal build if needed
+      run: |
+        echo "=== CREATING MINIMAL BUILD MANUALLY ==="
+        mkdir -p dist
+        echo '<!DOCTYPE html>
+        <html>
+        <head><title>DOM Game</title></head>
+        <body>
+          <h1>Goblin Game - Manual Build</h1>
+          <div id="gameBoard"></div>
+          <script>
+            console.log("Game loaded");
+            setInterval(() => {
+              console.log("Goblin moving...");
+            }, 2000);
+          </script>
+        </body>
+        </html>' > dist/index.html
+        echo "=== MANUAL BUILD CREATED ==="
+        ls -la dist/
