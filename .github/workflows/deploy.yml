@@ -1,152 +1,71 @@
-name: Debug Build Process
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  debug:
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: 🐛 Step 1 - Checkout
-      uses: actions/checkout@v2
-      continue-on-error: true
-    
-    - name: 🐛 Step 2 - Show files
-      run: |
-        echo "=== ВСЕ ФАЙЛЫ В РЕПОЗИТОРИИ ==="
-        ls -la
-        echo ""
-        echo "=== package.json ==="
-        cat package.json
-        echo ""
-        echo "=== ЕСТЬ ЛИ webpack.config.js? ==="
-        ls -la webpack.config.js 2>/dev/null || echo "ФАЙЛА НЕТ!"
-    
-    - name: 🐛 Step 3 - Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-      continue-on-error: true
-    
-    - name: 🐛 Step 4 - Try npm install
-      run: |
-        echo "=== ПРОБУЕМ npm install ==="
-        npm install 2>&1 | tail -50
-        echo "=== npm install завершился с кодом: $? ==="
-      continue-on-error: true
-    
-    - name: 🐛 Step 5 - Check if node_modules exists
-      run: |
-        echo "=== ПРОВЕРЯЕМ node_modules ==="
-        if [ -d "node_modules" ]; then
-          echo "✅ node_modules существует"
-          ls node_modules | head -10
-        else
-          echo "❌ node_modules НЕ СОЗДАН"
-        fi
-      continue-on-error: true
-    
-    - name: 🐛 Step 6 - Try npm run build
-      run: |
-        echo "=== ПРОБУЕМ npm run build ==="
-        npm run build 2>&1
-        echo "=== npm run build завершился с кодом: $? ==="
-      continue-on-error: true
-    
-    - name: 🐛 Step 7 - Check dist folder
-      run: |
-        echo "=== ПРОВЕРЯЕМ dist/ ==="
-        if [ -d "dist" ]; then
-          echo "✅ dist/ существует"
-          ls -la dist/
-        else
-          echo "❌ dist/ НЕ СОЗДАН"
-          echo "=== Создаём минимальный dist/ вручную ==="
-          mkdir -p dist
-          echo '<html><body><h1>Test Page</h1></body></html>' > dist/index.html
-        fi
-      continue-on-error: true
-    
-    - name: 🐛 Step 8 - Create manual deployment
-      run: |
-        echo "=== СОЗДАЁМ РУЧНУЮ СБОРКУ ==="
-        mkdir -p manual-dist
-        cat > manual-dist/index.html << 'HTML'
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>DOM Game - Working Version</title>
-            <style>
-                body { font-family: Arial; text-align: center; padding: 50px; }
-                .board { 
-                    display: grid; 
-                    grid-template-columns: repeat(4, 1fr);
-                    width: 400px; 
-                    height: 400px;
-                    margin: 20px auto;
-                    border: 2px solid #333;
-                }
-                .cell { border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; }
-                .goblin { font-size: 40px; }
-            </style>
-        </head>
-        <body>
-            <h1>🎮 Goblin Game (Manual Build)</h1>
-            <div class="board" id="board"></div>
-            <p>Moves: <span id="moves">0</span></p>
-            
-            <script>
-                let moves = 0;
-                let currentCell = 0;
-                
-                // Create 4x4 board
-                const board = document.getElementById('board');
-                for (let i = 0; i < 16; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.id = 'cell' + i;
-                    board.appendChild(cell);
-                }
-                
-                function moveGoblin() {
-                    let newCell;
-                    do {
-                        newCell = Math.floor(Math.random() * 16);
-                    } while (newCell === currentCell);
-                    
-                    // Remove from current
-                    if (currentCell !== null) {
-                        document.getElementById('cell' + currentCell).innerHTML = '';
-                    }
-                    
-                    // Add to new cell
-                    const cell = document.getElementById('cell' + newCell);
-                    const goblin = document.createElement('div');
-                    goblin.className = 'goblin';
-                    goblin.textContent = '👹';
-                    cell.appendChild(goblin);
-                    
-                    currentCell = newCell;
-                    moves++;
-                    document.getElementById('moves').textContent = moves;
-                }
-                
-                // Initialize
-                document.addEventListener('DOMContentLoaded', () => {
-                    moveGoblin(); // Initial position
-                    setInterval(moveGoblin, 2000); // Move every 2 seconds
-                });
-            </script>
-        </body>
-        </html>
-        HTML
-        echo "✅ Ручная сборка создана в manual-dist/"
-        ls -la manual-dist/
-    
-    - name: 🐛 Step 9 - Deploy manual version
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./manual-dist
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Debug - Show project structure
+        run: |
+          echo "=== Project structure ==="
+          ls -la
+          echo ""
+          echo "=== package.json ==="
+          cat package.json || echo "No package.json found"
+          echo ""
+          echo "=== webpack.config.js ==="
+          cat webpack.config.js 2>/dev/null || echo "No webpack.config.js"
+      
+      - name: Install dependencies
+        run: |
+          echo "Installing dependencies..."
+          npm install
+          echo "Dependencies installed successfully"
+      
+      - name: Build project
+        run: |
+          echo "Building project..."
+          npm run build
+          echo "Build completed"
+          echo "=== dist folder contents ==="
+          ls -la dist/ 2>/dev/null || echo "No dist folder"
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+  
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
