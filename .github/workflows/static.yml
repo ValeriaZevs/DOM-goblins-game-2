@@ -15,38 +15,225 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Build project
-        run: npm run build
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          # ВАЖНО: загружаем ТОЛЬКО папку dist
-          path: './dist'
-  
   deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Create static game
+        run: |
+          mkdir -p dist
+          cat > dist/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>DOM Game - Goblin Whack-a-Mole</title>
+              <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                      font-family: Arial, sans-serif; 
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      padding: 20px;
+                  }
+                  .container {
+                      background: white;
+                      border-radius: 15px;
+                      padding: 30px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                      max-width: 600px;
+                      width: 100%;
+                      text-align: center;
+                  }
+                  h1 { color: #333; margin-bottom: 20px; }
+                  .game-board {
+                      display: grid;
+                      grid-template-columns: repeat(4, 1fr);
+                      grid-template-rows: repeat(4, 1fr);
+                      width: 400px;
+                      height: 400px;
+                      margin: 20px auto;
+                      border: 3px solid #333;
+                      border-radius: 5px;
+                      background: #f8f9fa;
+                  }
+                  .cell {
+                      border: 1px solid #ddd;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      position: relative;
+                  }
+                  .goblin {
+                      font-size: 40px;
+                      cursor: pointer;
+                      transition: transform 0.3s;
+                  }
+                  .goblin:hover {
+                      transform: scale(1.2);
+                  }
+                  .controls {
+                      margin: 20px 0;
+                      display: flex;
+                      justify-content: center;
+                      gap: 10px;
+                  }
+                  button {
+                      padding: 10px 20px;
+                      background: #667eea;
+                      color: white;
+                      border: none;
+                      border-radius: 5px;
+                      cursor: pointer;
+                      font-size: 16px;
+                  }
+                  button:hover {
+                      background: #764ba2;
+                  }
+                  .stats {
+                      margin-top: 20px;
+                      font-size: 18px;
+                      color: #666;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>🎮 Goblin Whack-a-Mole</h1>
+                  <p>The goblin moves between cells every 2 seconds. Try to catch it!</p>
+                  
+                  <div class="game-board" id="gameBoard"></div>
+                  
+                  <div class="controls">
+                      <button id="startBtn">▶️ Start Game</button>
+                      <button id="pauseBtn">⏸️ Pause</button>
+                      <button id="resetBtn">🔄 Reset</button>
+                  </div>
+                  
+                  <div class="stats">
+                      <p>Moves: <span id="movesCount">0</span></p>
+                      <p>Game Status: <span id="status">Ready</span></p>
+                  </div>
+              </div>
+
+              <script>
+                  let currentPosition = null;
+                  let isRunning = false;
+                  let intervalId = null;
+                  let movesCount = 0;
+                  
+                  function createGameBoard() {
+                      const board = document.getElementById('gameBoard');
+                      board.innerHTML = '';
+                      
+                      for (let i = 0; i < 16; i++) {
+                          const cell = document.createElement('div');
+                          cell.className = 'cell';
+                          cell.dataset.index = i;
+                          board.appendChild(cell);
+                      }
+                  }
+                  
+                  function getRandomPosition(exclude = null) {
+                      let newPos;
+                      do {
+                          newPos = Math.floor(Math.random() * 16);
+                      } while (newPos === exclude);
+                      return newPos;
+                  }
+                  
+                  function createGoblin() {
+                      const goblin = document.createElement('div');
+                      goblin.className = 'goblin';
+                      goblin.textContent = '👹';
+                      return goblin;
+                  }
+                  
+                  function moveGoblin() {
+                      const cells = document.querySelectorAll('.cell');
+                      const goblin = document.querySelector('.goblin') || createGoblin();
+                      
+                      // Remove from current
+                      if (currentPosition !== null) {
+                          cells[currentPosition].innerHTML = '';
+                      }
+                      
+                      // Move to new position
+                      currentPosition = getRandomPosition(currentPosition);
+                      cells[currentPosition].appendChild(goblin);
+                      
+                      // Update moves
+                      movesCount++;
+                      document.getElementById('movesCount').textContent = movesCount;
+                  }
+                  
+                  function startGame() {
+                      if (isRunning) return;
+                      
+                      isRunning = true;
+                      document.getElementById('status').textContent = 'Running';
+                      
+                      // Initial move
+                      if (currentPosition === null) {
+                          moveGoblin();
+                      }
+                      
+                      // Set interval for moving
+                      intervalId = setInterval(moveGoblin, 2000);
+                  }
+                  
+                  function pauseGame() {
+                      if (!isRunning) return;
+                      
+                      isRunning = false;
+                      clearInterval(intervalId);
+                      intervalId = null;
+                      document.getElementById('status').textContent = 'Paused';
+                  }
+                  
+                  function resetGame() {
+                      pauseGame();
+                      currentPosition = null;
+                      movesCount = 0;
+                      document.getElementById('movesCount').textContent = '0';
+                      document.getElementById('status').textContent = 'Ready';
+                      createGameBoard();
+                  }
+                  
+                  // Initialize
+                  document.addEventListener('DOMContentLoaded', () => {
+                      createGameBoard();
+                      
+                      document.getElementById('startBtn').addEventListener('click', startGame);
+                      document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+                      document.getElementById('resetBtn').addEventListener('click', resetGame);
+                      
+                      // Auto-start after 1 second
+                      setTimeout(startGame, 1000);
+                  });
+              </script>
+          </body>
+          </html>
+          HTML
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+      
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v2
+        id: deployment
+        uses: actions/deploy-pages@v4
+HTML
