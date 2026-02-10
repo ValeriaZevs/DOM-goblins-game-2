@@ -1,17 +1,13 @@
-// Mock для картинок
-// Импортируем функции для тестирования
 import {
   getRandomPosition,
-  moveGoblin,
   createGameBoard,
   createGoblin,
+  moveGoblin,
 } from './index';
 
 jest.mock('./assets/goblin.png', () => 'test-goblin.png');
 
-// Mock DOM перед каждым тестом
 beforeEach(() => {
-  // Создаем минимальную DOM структуру
   document.body.innerHTML = `
     <div id="gameBoard"></div>
     <div id="movesCount">0</div>
@@ -21,7 +17,6 @@ beforeEach(() => {
   `;
 });
 
-// Очищаем после каждого теста
 afterEach(() => {
   document.body.innerHTML = '';
   jest.clearAllMocks();
@@ -45,7 +40,6 @@ describe('Game Logic Tests', () => {
     for (let i = 0; i < 100; i += 1) {
       positions.add(getRandomPosition());
     }
-    // За 100 итераций должны получить хотя бы несколько разных позиций
     expect(positions.size).toBeGreaterThan(1);
   });
 
@@ -62,35 +56,25 @@ describe('Game Logic Tests', () => {
   });
 
   test('moveGoblin moves goblin to different cell', () => {
-    // Создаем поле
     const cells = createGameBoard();
     const goblin = createGoblin();
-
     const startPosition = 5;
 
-    // Ставим гоблина в начальную позицию
-    cells[startPosition].appendChild(goblin);
-
-    // Перемещаем
+    cells[startPosition].append(goblin);
     const newPosition = moveGoblin(goblin, cells, startPosition);
 
-    // Проверяем, что позиция изменилась
     expect(newPosition).not.toBe(startPosition);
-
-    // Проверяем, что гоблин теперь в новой ячейке
     expect(cells[newPosition].contains(goblin)).toBe(true);
   });
 
   test('moveGoblin does not place goblin in same cell', () => {
     const cells = createGameBoard();
     const goblin = createGoblin();
-
-    // Многократно перемещаем из одной и той же ячейки
     const startPosition = 3;
     let lastPosition = startPosition;
 
     for (let i = 0; i < 10; i += 1) {
-      cells[lastPosition].appendChild(goblin);
+      cells[lastPosition].append(goblin);
       const newPosition = moveGoblin(goblin, cells, lastPosition);
       expect(newPosition).not.toBe(lastPosition);
       lastPosition = newPosition;
@@ -102,17 +86,12 @@ describe('Game Logic Tests', () => {
     const goblin = createGoblin();
     const startPosition = 0;
 
-    // Ставим гоблина и добавляем активный класс
-    cells[startPosition].appendChild(goblin);
+    cells[startPosition].append(goblin);
     cells[startPosition].classList.add('active');
 
-    // Перемещаем
     const newPosition = moveGoblin(goblin, cells, startPosition);
 
-    // Проверяем, что активный класс убрали со старой ячейки
     expect(cells[startPosition].classList.contains('active')).toBe(false);
-
-    // Проверяем, что активный класс добавили в новую ячейку
     expect(cells[newPosition].classList.contains('active')).toBe(true);
   });
 });
@@ -126,22 +105,16 @@ describe('DOM Manipulation Tests', () => {
     cell1.id = 'cell1';
     cell2.id = 'cell2';
 
-    document.body.appendChild(cell1);
-    document.body.appendChild(cell2);
+    document.body.append(cell1, cell2);
+    cell1.append(goblin);
 
-    // Добавляем гоблина в первую ячейку
-    cell1.appendChild(goblin);
     expect(cell1.contains(goblin)).toBe(true);
     expect(cell2.contains(goblin)).toBe(false);
 
-    // Перемещаем во вторую ячейку (БЕЗ removeChild!)
-    cell2.appendChild(goblin);
+    cell2.append(goblin);
 
-    // Проверяем, что гоблин теперь во второй ячейке
     expect(cell1.contains(goblin)).toBe(false);
     expect(cell2.contains(goblin)).toBe(true);
-
-    // Доказываем, что элемент может быть только в одном месте
     expect(document.body.querySelectorAll('img').length).toBe(1);
   });
 });

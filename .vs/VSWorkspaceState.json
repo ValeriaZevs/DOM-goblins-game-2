@@ -8,6 +8,6 @@
     "\\src\\styles",
     "\\__mocks__"
   ],
-  "SelectedNode": "\\.eslintignore",
+  "SelectedNode": "\\.github\\workflows\\deploy.yml",
   "PreviewInSolutionExplorer": false
 }
