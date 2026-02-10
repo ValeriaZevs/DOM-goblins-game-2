@@ -1,29 +1,95 @@
-name: Deploy to GitHub Pages
+name: Ultra Simple Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy
+      
+      - name: Create index.html manually
+        run: |
+          mkdir -p dist
+          cat > dist/index.html << 'HTML'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>DOM Game</title>
+            <style>
+              body { font-family: Arial; text-align: center; padding: 50px; }
+              .game-board { 
+                display: grid; 
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                width: 400px; 
+                height: 400px;
+                margin: 20px auto;
+                border: 2px solid #333;
+              }
+              .cell { border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; }
+              .goblin { font-size: 30px; }
+            </style>
+          </head>
+          <body>
+            <h1>Goblin Game 🎮</h1>
+            <p>Watch the goblin move between cells!</p>
+            <div class="game-board" id="gameBoard"></div>
+            <p>Moves: <span id="moves">0</span></p>
+            <button onclick="moveGoblin()">Move Goblin</button>
+            
+            <script>
+              let moves = 0;
+              let currentCell = 0;
+              
+              function createBoard() {
+                const board = document.getElementById('gameBoard');
+                for (let i = 0; i < 16; i++) {
+                  const cell = document.createElement('div');
+                  cell.className = 'cell';
+                  cell.id = 'cell' + i;
+                  board.appendChild(cell);
+                }
+              }
+              
+              function moveGoblin() {
+                let newCell;
+                do {
+                  newCell = Math.floor(Math.random() * 16);
+                } while (newCell === currentCell);
+                
+                // Clear previous
+                const prevCell = document.getElementById('cell' + currentCell);
+                if (prevCell) prevCell.innerHTML = '';
+                
+                // Add to new cell
+                const cell = document.getElementById('cell' + newCell);
+                const goblin = document.createElement('div');
+                goblin.className = 'goblin';
+                goblin.textContent = '👹';
+                cell.appendChild(goblin);
+                
+                currentCell = newCell;
+                moves++;
+                document.getElementById('moves').textContent = moves;
+              }
+              
+              // Initialize
+              document.addEventListener('DOMContentLoaded', () => {
+                createBoard();
+                moveGoblin();
+                setInterval(moveGoblin, 2000);
+              });
+            </script>
+          </body>
+          </html>
+          HTML
+          echo "✅ Created minimal game"
+      
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
