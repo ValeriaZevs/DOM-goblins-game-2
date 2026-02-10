@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 name: Deploy to GitHub Pages
+=======
+name: Deploy
+>>>>>>> 2b4743b93172761ba87f8032214b0a17d3ec4376
 
 on:
   push:
     branches: [ main ]
+<<<<<<< HEAD
   pull_request:
     branches: [ main ]
 
@@ -14,11 +19,14 @@ permissions:
 concurrency:
   group: "pages"
   cancel-in-progress: true
+=======
+>>>>>>> 2b4743b93172761ba87f8032214b0a17d3ec4376
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+<<<<<<< HEAD
       - name: Checkout
         uses: actions/checkout@v4
       
@@ -58,3 +66,28 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+=======
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        # Убираем cache
+        # cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+>>>>>>> 2b4743b93172761ba87f8032214b0a17d3ec4376
