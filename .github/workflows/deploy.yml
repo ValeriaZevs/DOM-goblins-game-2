@@ -23,33 +23,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'npm'
       
-      - name: Debug - Show project structure
-        run: |
-          echo "=== Project structure ==="
-          ls -la
-          echo ""
-          echo "=== package.json ==="
-          cat package.json || echo "No package.json found"
-          echo ""
-          echo "=== webpack.config.js ==="
-          cat webpack.config.js 2>/dev/null || echo "No webpack.config.js"
-      
       - name: Install dependencies
-        run: |
-          echo "Installing dependencies..."
-          npm install
-          echo "Dependencies installed successfully"
+        run: npm install
       
       - name: Build project
-        run: |
-          echo "Building project..."
-          npm run build
-          echo "Build completed"
-          echo "=== dist folder contents ==="
-          ls -la dist/ 2>/dev/null || echo "No dist folder"
+        run: npm run build
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
