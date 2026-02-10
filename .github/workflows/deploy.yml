@@ -1,48 +1,16 @@
-cat > .github/workflows/deploy.yml << 'EOF'
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]
-
+name: Deploy
+on: [push]
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # Ограничиваем время выполнения
-    
     steps:
-      # Шаг 1: Получаем код
-      - name: Checkout
-        uses: actions/checkout@v3
-      
-      # Шаг 2: Настраиваем Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
         with:
-          node-version: '16'
-          cache: 'npm'
-      
-      # Шаг 3: Устанавливаем зависимости (быстро, без тестов)
-      - name: Install dependencies
-        run: |
-          echo "Устанавливаем зависимости..."
-          npm ci --only=production
-          echo "Зависимости установлены!"
-      
-      # Шаг 4: Собираем проект
-      - name: Build project
-        run: |
-          echo "Собираем проект..."
-          npm run build
-          echo "Сборка завершена!"
-          ls -la dist/
-      
-      # Шаг 5: Деплоим на GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+          node-version: '14'
+      - run: npm install
+      - run: npm run build
+      - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: true
-EOF
