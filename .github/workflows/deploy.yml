@@ -1,65 +1,50 @@
-
-name: Build, Test and Deploy
 name: Build, Test and Deploy
 
-
-on:
 on:
   push:
-  push:
-    branches: [main]
-    branches: [main]
+    branches:
+      - main
   pull_request:
-  pull_request:
-    branches: [main]
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
   workflow_dispatch:
 
-
 permissions:
-permissions:
-  contents: write
   contents: read
   pages: write
   id-token: write
 
-
-concurrency:
 concurrency:
   group: pages
-  group: pages
-  cancel-in-progress: true
   cancel-in-progress: true
 
-
 jobs:
-jobs:
-  build-test-deploy:
   build:
     runs-on: ubuntu-latest
-    runs-on: ubuntu-latest
-
-
-    steps:
     steps:
       - name: Checkout
-      - name: Checkout
-        uses: actions/checkout@v4
         uses: actions/checkout@v4
 
-
-      - name: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        uses: actions/setup-node@v4
-        with:
         with:
           node-version: 20
-          node-version: 20
-          cache: yarn
           cache: yarn
 
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile || yarn install
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Test
+        run: yarn test --runInBand
+
+      - name: Build
+        run: yarn build
+
+      - name: Disable Jekyll processing
+        run: touch dist/.nojekyll
 
       - name: Setup GitHub Pages
         if: github.event_name != 'pull_request'
@@ -67,57 +52,19 @@ jobs:
         with:
           enablement: true
 
-      - name: Install dependencies
-      - name: Install dependencies
-        run: yarn install
-        run: yarn install --frozen-lockfile || yarn install
-
-
-      - name: Lint
-      - name: Lint
-        run: yarn lint
-        run: yarn lint
-
-
-      - name: Test
-      - name: Test
-        run: yarn test --runInBand
-        run: yarn test --runInBand
-
-
-      - name: Build
-      - name: Build
-        run: yarn build
-        run: yarn build
-
-
-      - name: Disable Jekyll processing
-      - name: Disable Jekyll processing
-        if: github.event_name != 'pull_request'
-        run: touch dist/.nojekyll
-        run: touch dist/.nojekyll
-
-
-      - name: Deploy to gh-pages branch
       - name: Upload artifact
         if: github.event_name != 'pull_request'
-        if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4
         uses: actions/upload-pages-artifact@v3
         with:
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           path: ./dist
-          publish_dir: ./dist
 
   deploy:
     if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
