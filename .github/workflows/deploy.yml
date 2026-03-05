@@ -8,14 +8,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build-test-deploy:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -42,9 +44,21 @@ jobs:
           ASSET_PATH: /${{ github.event.repository.name }}/
         run: yarn build
 
-      - name: Deploy to GitHub Pages branch
+      - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: ./dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
