@@ -48,7 +48,7 @@ jobs:
           path: ./dist
 
   deploy:
-    if: github.event_name != 'pull_request' && github.event.repository.has_pages == true
+    if: github.event_name != 'pull_request'
     needs: build-and-test
     runs-on: ubuntu-latest
     environment:
