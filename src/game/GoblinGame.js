@@ -20,7 +20,6 @@ export default class GoblinGame {
     this.goblin = GoblinGame.createGoblin();
     this.timerId = null;
     this.currentPosition = null;
-    this.previousPosition = null;
     this.score = 0;
     this.misses = 0;
     this.visible = false;
@@ -54,11 +53,12 @@ export default class GoblinGame {
     this.score += 1;
     this.visible = false;
     this.board.clearGoblin(this.currentPosition);
-    this.currentPosition = null;
     this.render('Great hit!');
   }
 
-@@ -62,67 +64,70 @@ export default class GoblinGame {
+  isRunning() {
+    return this.timerId !== null;
+  }
 
   start() {
     if (this.isRunning()) {
@@ -78,54 +78,3 @@ export default class GoblinGame {
 
     this.startButton.disabled = false;
     this.render(status);
-  }
-
-  reset() {
-    this.stop('Press Start to begin');
-    this.board.clearGoblin(this.currentPosition);
-    this.currentPosition = null;
-    this.previousPosition = null;
-    this.score = 0;
-    this.misses = 0;
-    this.visible = false;
-    this.render('Press Start to begin');
-  }
-
-  tick() {
-    if (this.visible) {
-      this.misses += 1;
-    }
-
-    this.board.clearGoblin(this.currentPosition);
-
-    if (this.misses >= this.maxMisses) {
-      this.visible = false;
-      this.currentPosition = null;
-      this.previousPosition = null;
-      this.stop(`Game over! Final score: ${this.score}`);
-      return;
-    }
-
-    this.currentPosition = GoblinGame.getRandomPosition(this.previousPosition);
-    this.previousPosition = this.currentPosition;
-    this.board.placeGoblin(this.goblin, this.currentPosition);
-    this.visible = true;
-    this.render('Whack the goblin!');
-  }
-
-  render(status) {
-    this.scoreBoard.update({
-      score: this.score,
-      misses: this.misses,
-      status,
-    });
-  }
-
-  mount() {
-    this.board.render();
-    this.render('Press Start to begin');
-
-    this.startButton.addEventListener('click', () => this.start());
-    this.resetButton.addEventListener('click', () => this.reset());
-  }
-}
