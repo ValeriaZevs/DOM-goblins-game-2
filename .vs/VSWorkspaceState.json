@@ -5,9 +5,9 @@
     "\\.github\\workflows",
     "\\src",
     "\\src\\assets",
+    "\\src\\game",
     "\\src\\styles",
     "\\__mocks__"
   ],
-  "SelectedNode": "\\.github\\workflows\\deploy.yml",
   "PreviewInSolutionExplorer": false
 }

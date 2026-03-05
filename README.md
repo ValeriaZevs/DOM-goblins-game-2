@@ -1,38 +1,45 @@
-﻿# 🎮 DOM Game - Goblin Whack-a-Mole
+# 🎮 Goblin Whack-a-Mole
 
-[![Build, Test and Deploy](https://github.com/ValeriaZevs/DOM-goblins-game/actions/workflows/deploy.yml/badge.svg)](https://github.com/ValeriaZevs/DOM-goblins-game/actions/workflows/deploy.yml)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://ValeriaZevs.github.io/DOM-goblins-game/)
+[![Build, Test and Deploy](https://github.com/ValeriaZevs/DOM-goblins-game-2/actions/workflows/deploy.yml/badge.svg)](https://github.com/ValeriaZevs/DOM-goblins-game-2/actions/workflows/deploy.yml)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://ValeriaZevs.github.io/DOM-goblins-game-2/)
 
-Игра с перемещением гоблина по игровому полю 4x4. Реализована в рамках домашнего задания по теме "DOM".
+Игра по теме DOM: гоблин появляется в случайной ячейке на 1 секунду, игрок должен кликнуть по нему и набрать очки.
 
-## 🎯 Демо
+## 🚀 Demo
 
-👉 **[Открыть игру на GitHub Pages](https://ValeriaZevs.github.io/DOM-goblins-game/)**
+- GitHub Pages: https://ValeriaZevs.github.io/DOM-goblins-game-2/
 
-## 📋 Функциональность
+## ✅ Реализовано
 
-- ✅ Создание игрового поля 4x4 программно
-- ✅ Автоматическая генерация гоблина в случайной позиции
-- ✅ Перемещение гоблина между клетками каждые 2 секунды
-- ✅ Гоблин НИКОГДА не перемещается в ту же самую клетку
-- ✅ Визуальные эффекты и анимации
-- ✅ Управление игрой (старт, пауза, сброс)
-- ✅ Изменение скорости перемещения
-- ✅ Подсчет количества перемещений
-- ✅ Полностью адаптивный дизайн
+- Поле 4x4 генерируется динамически.
+- Гоблин появляется в случайной клетке ровно на 1 секунду.
+- При клике по гоблину начисляется +1 очко и гоблин исчезает.
+- Пропуск гоблина увеличивает счётчик промахов.
+- После 5 промахов игра завершается.
+- Логика игры разделена на классы (`GameBoard`, `ScoreBoard`, `GoblinGame`).
+- Сборка и стили/картинки проходят через Webpack.
+- Деплой на GitHub Pages через GitHub Actions.
 
-## 🛠 Технологии
+## 🛠 Tech stack
 
-- **Webpack** - сборка проекта
-- **Babel** - транспиляция ES6+
-- **ESLint** - проверка кода (конфиг Airbnb)
-- **Jest** - unit-тестирование
-- **GitHub Actions** - CI/CD
-- **GitHub Pages** - хостинг
+- Yarn
+- Webpack
+- Babel
+- ESLint (Airbnb base)
+- Jest
+- GitHub Actions + GitHub Pages
 
-## 🚀 Быстрый старт
-
-### Установка зависимостей
+## 📦 Local запуск
 
 ```bash
-npm install
+yarn install
+yarn start
+```
+
+## 🧪 Проверки
+
+```bash
+yarn lint
+yarn test
+yarn build
+```

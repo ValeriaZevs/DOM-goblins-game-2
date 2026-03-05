@@ -1,120 +1,64 @@
-import {
-  getRandomPosition,
-  createGameBoard,
-  createGoblin,
-  moveGoblin,
-} from './index';
+import GameBoard from './js/GameBoard';
+import GameController from './js/GameController';
 
-jest.mock('./assets/goblin.png', () => 'test-goblin.png');
+describe('GameBoard', () => {
+  test('creates 16 cells for a 4x4 board', () => {
+    document.body.innerHTML = '<div id="gameBoard"></div>';
+    const board = new GameBoard(document.getElementById('gameBoard'));
 
-beforeEach(() => {
-  document.body.innerHTML = `
-    <div id="gameBoard"></div>
-    <div id="movesCount">0</div>
-    <button id="startBtn"></button>
-    <button id="pauseBtn"></button>
-    <button id="resetBtn"></button>
-  `;
-});
+    const cells = board.render();
 
-afterEach(() => {
-  document.body.innerHTML = '';
-  jest.clearAllMocks();
-});
-
-describe('Game Logic Tests', () => {
-  test('getRandomPosition returns number between 0 and 15', () => {
-    const position = getRandomPosition();
-    expect(position).toBeGreaterThanOrEqual(0);
-    expect(position).toBeLessThanOrEqual(15);
+    expect(cells).toHaveLength(16);
+    expect(document.querySelectorAll('.cell')).toHaveLength(16);
   });
 
-  test('getRandomPosition does not return excluded position', () => {
-    const exclude = 7;
-    const position = getRandomPosition(exclude);
-    expect(position).not.toBe(exclude);
+  test('returns random index different from excluded one', () => {
+    document.body.innerHTML = '<div id="gameBoard"></div>';
+    const board = new GameBoard(document.getElementById('gameBoard'));
+    board.render();
+
+    const nextIndex = board.getRandomCellIndex(3);
+
+    expect(nextIndex).not.toBe(3);
+    expect(nextIndex).toBeGreaterThanOrEqual(0);
+    expect(nextIndex).toBeLessThan(16);
+  });
+});
+
+describe('GameController', () => {
+  beforeEach(() => {
+    document.body.innerHTML = `
+      <main id="app">
+        <p id="status"></p>
+        <span id="score"></span>
+        <span id="misses"></span>
+        <button id="startBtn" type="button">Старт</button>
+        <button id="resetBtn" type="button">Сброс</button>
+        <div id="gameBoard"></div>
+      </main>
+    `;
   });
 
-  test('getRandomPosition eventually returns all positions', () => {
-    const positions = new Set();
-    for (let i = 0; i < 100; i += 1) {
-      positions.add(getRandomPosition());
+  test('increments score when goblin is hit', () => {
+    const game = new GameController(document.getElementById('app'));
+    game.init();
+
+    game.showNextGoblin();
+    const goblin = document.querySelector('.goblin');
+    goblin.click();
+
+    expect(document.getElementById('score').textContent).toBe('1');
+  });
+
+  test('ends game after 5 misses', () => {
+    const game = new GameController(document.getElementById('app'));
+    game.init();
+
+    for (let i = 0; i < 6; i += 1) {
+      game.showNextGoblin();
     }
-    expect(positions.size).toBeGreaterThan(1);
-  });
 
-  test('createGameBoard creates 16 cells', () => {
-    const cells = createGameBoard();
-    expect(cells.length).toBe(16);
-    expect(document.querySelectorAll('.cell').length).toBe(16);
-  });
-
-  test('createGoblin creates an image element', () => {
-    const goblin = createGoblin();
-    expect(goblin.tagName).toBe('IMG');
-    expect(goblin.className).toBe('goblin');
-  });
-
-  test('moveGoblin moves goblin to different cell', () => {
-    const cells = createGameBoard();
-    const goblin = createGoblin();
-    const startPosition = 5;
-
-    cells[startPosition].append(goblin);
-    const newPosition = moveGoblin(goblin, cells, startPosition);
-
-    expect(newPosition).not.toBe(startPosition);
-    expect(cells[newPosition].contains(goblin)).toBe(true);
-  });
-
-  test('moveGoblin does not place goblin in same cell', () => {
-    const cells = createGameBoard();
-    const goblin = createGoblin();
-    const startPosition = 3;
-    let lastPosition = startPosition;
-
-    for (let i = 0; i < 10; i += 1) {
-      cells[lastPosition].append(goblin);
-      const newPosition = moveGoblin(goblin, cells, lastPosition);
-      expect(newPosition).not.toBe(lastPosition);
-      lastPosition = newPosition;
-    }
-  });
-
-  test('moveGoblin updates active class on cells', () => {
-    const cells = createGameBoard();
-    const goblin = createGoblin();
-    const startPosition = 0;
-
-    cells[startPosition].append(goblin);
-    cells[startPosition].classList.add('active');
-
-    const newPosition = moveGoblin(goblin, cells, startPosition);
-
-    expect(cells[startPosition].classList.contains('active')).toBe(false);
-    expect(cells[newPosition].classList.contains('active')).toBe(true);
-  });
-});
-
-describe('DOM Manipulation Tests', () => {
-  test('goblin can be moved by changing parent', () => {
-    const goblin = createGoblin();
-    const cell1 = document.createElement('div');
-    const cell2 = document.createElement('div');
-
-    cell1.id = 'cell1';
-    cell2.id = 'cell2';
-
-    document.body.append(cell1, cell2);
-    cell1.append(goblin);
-
-    expect(cell1.contains(goblin)).toBe(true);
-    expect(cell2.contains(goblin)).toBe(false);
-
-    cell2.append(goblin);
-
-    expect(cell1.contains(goblin)).toBe(false);
-    expect(cell2.contains(goblin)).toBe(true);
-    expect(document.body.querySelectorAll('img').length).toBe(1);
+    expect(document.getElementById('status').textContent).toContain('Игра окончена');
+    expect(game.timerId).toBeNull();
   });
 });
