@@ -1,13 +1,29 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const packageJson = require('./package.json');
 
-const repositoryName = process.env.GITHUB_REPOSITORY
-  ? process.env.GITHUB_REPOSITORY.split('/')[1]
-  : '';
+const ensureTrailingSlash = (value) => {
+  if (!value) {
+    return '/';
+  }
 
-const publicPath = process.env.GITHUB_ACTIONS && repositoryName
-  ? `/${repositoryName}/`
-  : '/';
+  return value.endsWith('/') ? value : `${value}/`;
+};
+
+const getPublicPathFromHomepage = () => {
+  if (!packageJson.homepage) {
+    return '/';
+  }
+
+  try {
+    const homepageUrl = new URL(packageJson.homepage);
+    return ensureTrailingSlash(homepageUrl.pathname);
+  } catch (error) {
+    return ensureTrailingSlash(packageJson.homepage);
+  }
+};
+
+const publicPath = ensureTrailingSlash(process.env.ASSET_PATH || getPublicPathFromHomepage());
 
 module.exports = {
   mode: 'production',
