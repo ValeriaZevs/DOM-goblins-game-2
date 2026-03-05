@@ -1,4 +1,8 @@
 export default class GameBoard {
+  static GRID_SIZE = 4;
+
+  static CELL_COUNT = GameBoard.GRID_SIZE ** 2;
+
   constructor(boardElement) {
     this.boardElement = boardElement;
     this.cells = [];
@@ -8,7 +12,7 @@ export default class GameBoard {
     this.boardElement.innerHTML = '';
     this.cells = [];
 
-    for (let index = 0; index < 16; index += 1) {
+    for (let index = 0; index < GameBoard.CELL_COUNT; index += 1) {
       const cell = document.createElement('div');
       cell.className = 'cell';
       cell.dataset.index = String(index);
@@ -34,11 +38,3 @@ export default class GameBoard {
     if (position === null) {
       return;
     }
-
-    const targetCell = this.cells[position];
-    if (targetCell) {
-      targetCell.classList.remove('active');
-      targetCell.innerHTML = '';
-    }
-  }
-}
