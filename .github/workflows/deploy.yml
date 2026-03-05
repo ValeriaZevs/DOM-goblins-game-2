@@ -3,7 +3,7 @@ name: Build, Test and Deploy
 on:
   push:
     branches: [main]
-  pull_request:
+   pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -29,31 +29,17 @@ jobs:
         with:
           node-version: 18
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Use Yarn 4.12.0
-        run: corepack prepare yarn@4.12.0 --activate
-
-      - name: Verify Yarn version
-        run: corepack yarn --version
-
       - name: Install dependencies
-        run: |
-          if [ -f yarn.lock ]; then
-            corepack yarn install --immutable
-          else
-            corepack yarn install
-          fi
+        run: npm install
 
       - name: Lint
-        run: corepack yarn lint
+        run: npm run lint
 
       - name: Test
-        run: corepack yarn test --runInBand
+        run: npm test -- --runInBand
 
       - name: Build
-        run: corepack yarn build
+        run: npm run build
 
       - name: Upload build artifact
         if: github.event_name != 'pull_request'
