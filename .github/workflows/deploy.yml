@@ -8,16 +8,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,21 +42,13 @@ jobs:
           ASSET_PATH: /${{ github.event.repository.name }}/
         run: yarn build
 
-      - name: Upload GitHub Pages artifact
+      - name: Disable Jekyll processing
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        run: touch dist/.nojekyll
+
+      - name: Deploy to gh-pages branch
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: ./dist
-
-  deploy:
-    if: github.event_name != 'pull_request'
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
