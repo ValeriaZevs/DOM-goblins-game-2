@@ -1,0 +1,2 @@
+# This file is intentionally committed for CI cache key discovery.
+# It will be updated by `yarn install` in environments with registry access.
