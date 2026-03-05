@@ -1,6 +1,13 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
+const defaultRepositoryName = 'DOM-goblins-game-2';
+const repositoryNameFromEnv = process.env.GITHUB_REPOSITORY
+  ? process.env.GITHUB_REPOSITORY.split('/')[1]
+  : null;
+
+const repositoryName = process.env.REPOSITORY_NAME || repositoryNameFromEnv || defaultRepositoryName;
+
 module.exports = {
   mode: 'production',
   entry: './src/index.js',
@@ -9,7 +16,7 @@ module.exports = {
     filename: 'bundle.[contenthash].js',
     path: path.resolve(__dirname, 'dist'),
     clean: true,
-    publicPath: 'auto',
+    publicPath: `/${repositoryName}/`,
     assetModuleFilename: 'assets/[name][contenthash][ext][query]',
   },
 
@@ -32,8 +39,10 @@ module.exports = {
       },
     ],
   },
+
   plugins: [
     new HtmlWebpackPlugin({
+
       template: './src/index.html',
       filename: 'index.html',
     }),
