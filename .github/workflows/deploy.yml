@@ -49,8 +49,6 @@ jobs:
       - name: Setup GitHub Pages
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
         if: github.event_name != 'pull_request'
