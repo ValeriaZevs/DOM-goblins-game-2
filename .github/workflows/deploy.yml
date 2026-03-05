@@ -38,8 +38,6 @@ jobs:
         run: yarn test --runInBand
 
       - name: Build
-        env:
-          ASSET_PATH: /${{ github.event.repository.name }}/
         run: yarn build
 
       - name: Disable Jekyll processing
