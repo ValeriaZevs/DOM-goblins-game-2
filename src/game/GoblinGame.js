@@ -1,4 +1,5 @@
 import goblinImage from '../assets/goblin.png';
+import GameBoard from './GameBoard';
 
 export default class GoblinGame {
   constructor({
@@ -19,6 +20,7 @@ export default class GoblinGame {
     this.goblin = GoblinGame.createGoblin();
     this.timerId = null;
     this.currentPosition = null;
+    this.previousPosition = null;
     this.score = 0;
     this.misses = 0;
     this.visible = false;
@@ -30,7 +32,7 @@ export default class GoblinGame {
   static getRandomPosition(excludePosition = null) {
     let position;
     do {
-      position = Math.floor(Math.random() * 16);
+      position = Math.floor(Math.random() * GameBoard.CELL_COUNT);
     } while (excludePosition !== null && position === excludePosition);
 
     return position;
@@ -56,9 +58,7 @@ export default class GoblinGame {
     this.render('Great hit!');
   }
 
-  isRunning() {
-    return this.timerId !== null;
-  }
+@@ -62,67 +64,70 @@ export default class GoblinGame {
 
   start() {
     if (this.isRunning()) {
@@ -84,6 +84,7 @@ export default class GoblinGame {
     this.stop('Press Start to begin');
     this.board.clearGoblin(this.currentPosition);
     this.currentPosition = null;
+    this.previousPosition = null;
     this.score = 0;
     this.misses = 0;
     this.visible = false;
@@ -100,11 +101,13 @@ export default class GoblinGame {
     if (this.misses >= this.maxMisses) {
       this.visible = false;
       this.currentPosition = null;
+      this.previousPosition = null;
       this.stop(`Game over! Final score: ${this.score}`);
       return;
     }
 
-    this.currentPosition = GoblinGame.getRandomPosition(this.currentPosition);
+    this.currentPosition = GoblinGame.getRandomPosition(this.previousPosition);
+    this.previousPosition = this.currentPosition;
     this.board.placeGoblin(this.goblin, this.currentPosition);
     this.visible = true;
     this.render('Whack the goblin!');
