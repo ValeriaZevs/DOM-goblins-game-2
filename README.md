@@ -1,42 +1,26 @@
 # 🎮 Goblin Whack-a-Mole
 
 [![Build, Test and Deploy](https://github.com/ValeriaZevs/DOM-goblins-game-2/actions/workflows/deploy.yml/badge.svg)](https://github.com/ValeriaZevs/DOM-goblins-game-2/actions/workflows/deploy.yml)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live-brightgreen)](https://ValeriaZevs.github.io/DOM-goblins-game-2/)
 
-Игра по теме DOM: гоблин появляется в случайной ячейке на 1 секунду, игрок должен кликнуть по нему и набрать очки.
+## GitHub Pages
 
-## 🚀 Demo
+- Live demo: https://ValeriaZevs.github.io/DOM-goblins-game-2/
 
-- GitHub Pages: https://ValeriaZevs.github.io/DOM-goblins-game-2/
+## 📌 Homework requirements
 
-## ✅ Реализовано
+- Project uses **Yarn** as package manager.
+- `package-lock.json` must be absent from the repository.
+- Full build is done with **Webpack** (JavaScript, styles and images).
+- Deployment to **GitHub Pages** is configured via **GitHub Actions**.
 
-- Поле 4x4 генерируется динамически.
-- Гоблин появляется в случайной клетке ровно на 1 секунду.
-- При клике по гоблину начисляется +1 очко и гоблин исчезает.
-- Пропуск гоблина увеличивает счётчик промахов.
-- После 5 промахов игра завершается.
-- Логика игры разделена на классы (`GameBoard`, `ScoreBoard`, `GoblinGame`).
-- Сборка и стили/картинки проходят через Webpack.
-- Деплой на GitHub Pages через GitHub Actions.
-
-## 🛠 Tech stack
-
-- Yarn
-- Webpack
-- Babel
-- ESLint (Airbnb base)
-- Jest
-- GitHub Actions + GitHub Pages
-
-## 📦 Local запуск
+## 🚀 Local run
 
 ```bash
 yarn install
 yarn start
 ```
 
-## 🧪 Проверки
+## 🧪 Checks
 
 ```bash
 yarn lint
