@@ -46,4 +46,3 @@ describe('GoblinGame', () => {
     expect(goblin.alt).toBe('Goblin');
   });
 });
-
