@@ -49,5 +49,6 @@
     "webpack": "^5.105.0",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.3"
-  }
+  },
+  "homepage": "https://ValeriaZevs.github.io/DOM-goblins-game-2/"
 }
