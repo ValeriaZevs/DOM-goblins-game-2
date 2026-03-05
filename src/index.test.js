@@ -74,6 +74,42 @@ describe('GoblinGame', () => {
     randomSpy.mockRestore();
   });
 
+
+  test('after hit goblin does not reappear in the same cell', () => {
+    const board = {
+      clearGoblin: jest.fn(),
+      placeGoblin: jest.fn(),
+      render: jest.fn(),
+    };
+    const scoreBoard = { update: jest.fn() };
+    const startButton = { disabled: false };
+    const resetButton = { addEventListener: jest.fn() };
+
+    const game = new GoblinGame({
+      board,
+      scoreBoard,
+      startButton,
+      resetButton,
+    });
+
+    const randomSpy = jest
+      .spyOn(Math, 'random')
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.4);
+
+    game.timerId = 1;
+    game.tick();
+    const firstPosition = game.currentPosition;
+
+    game.handleGoblinClick();
+    game.tick();
+
+    expect(game.currentPosition).not.toBe(firstPosition);
+
+    randomSpy.mockRestore();
+  });
+
   test('creates goblin image element', () => {
     const goblin = GoblinGame.createGoblin();
 
