@@ -1,11 +1,15 @@
 export default class GameBoard {
-  static GRID_SIZE = 4;
-
-  static CELL_COUNT = GameBoard.GRID_SIZE ** 2;
-
   constructor(boardElement) {
     this.boardElement = boardElement;
     this.cells = [];
+  }
+
+  static get GRID_SIZE() {
+    return 4;
+  }
+
+  static get CELL_COUNT() {
+    return GameBoard.GRID_SIZE ** 2;
   }
 
   render() {
@@ -30,11 +34,22 @@ export default class GameBoard {
   placeGoblin(goblin, position) {
     this.clearActiveState();
     const targetCell = this.cells[position];
+
+    if (!targetCell) {
+      return;
+    }
+
+    targetCell.innerHTML = '';
     targetCell.append(goblin);
     targetCell.classList.add('active');
   }
 
   clearGoblin(position) {
-    if (position === null) {
+    if (position === null || !this.cells[position]) {
       return;
     }
+
+    this.cells[position].innerHTML = '';
+    this.cells[position].classList.remove('active');
+  }
+}
