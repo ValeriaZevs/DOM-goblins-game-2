@@ -11,7 +11,6 @@ describe('GameBoard', () => {
     expect(cells).toHaveLength(GameBoard.CELL_COUNT);
     expect(document.querySelectorAll('.cell')).toHaveLength(GameBoard.CELL_COUNT);
   });
-
   test('places and clears goblin in selected cell', () => {
     document.body.innerHTML = '<div id="gameBoard"></div>';
     const board = new GameBoard(document.getElementById('gameBoard'));
@@ -37,9 +36,6 @@ describe('GoblinGame', () => {
     expect(nextIndex).toBeGreaterThanOrEqual(0);
     expect(nextIndex).toBeLessThan(GameBoard.CELL_COUNT);
   });
-
-
-
   test('does not spawn goblin in the same cell twice in a row', () => {
     const board = {
       clearGoblin: jest.fn(),
@@ -73,8 +69,6 @@ describe('GoblinGame', () => {
 
     randomSpy.mockRestore();
   });
-
-
   test('after hit goblin does not reappear in the same cell', () => {
     const board = {
       clearGoblin: jest.fn(),
@@ -109,7 +103,6 @@ describe('GoblinGame', () => {
 
     randomSpy.mockRestore();
   });
-
   test('creates goblin image element', () => {
     const goblin = GoblinGame.createGoblin();
 
