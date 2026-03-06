@@ -25,6 +25,9 @@ export default class GoblinGame {
     this.visible = false;
 
     this.handleGoblinClick = this.handleGoblinClick.bind(this);
+    this.handleStartClick = this.handleStartClick.bind(this);
+    this.handleResetClick = this.handleResetClick.bind(this);
+
     this.goblin.addEventListener('click', this.handleGoblinClick);
   }
 
@@ -45,6 +48,25 @@ export default class GoblinGame {
     return goblin;
   }
 
+  mount() {
+    this.board.render();
+    this.startButton.addEventListener('click', this.handleStartClick);
+    this.resetButton.addEventListener('click', this.handleResetClick);
+    this.render('Press Start');
+  }
+
+  isRunning() {
+    return this.timerId !== null;
+  }
+
+  handleStartClick() {
+    this.start();
+  }
+
+  handleResetClick() {
+    this.reset();
+  }
+
   handleGoblinClick() {
     if (!this.visible || !this.isRunning()) {
       return;
@@ -54,10 +76,6 @@ export default class GoblinGame {
     this.visible = false;
     this.board.clearGoblin(this.currentPosition);
     this.render('Great hit!');
-  }
-
-  isRunning() {
-    return this.timerId !== null;
   }
 
   start() {
@@ -77,4 +95,42 @@ export default class GoblinGame {
     }
 
     this.startButton.disabled = false;
+    this.visible = false;
+    this.board.clearGoblin(this.currentPosition);
+    this.currentPosition = null;
     this.render(status);
+  }
+
+  reset() {
+    this.stop('Game reset');
+    this.score = 0;
+    this.misses = 0;
+    this.render('Press Start');
+  }
+
+  tick() {
+    if (this.visible) {
+      this.misses += 1;
+
+      if (this.misses >= this.maxMisses) {
+        this.stop('Game over');
+        return;
+      }
+    }
+
+    const nextPosition = GoblinGame.getRandomPosition(this.currentPosition);
+    this.currentPosition = nextPosition;
+    this.visible = true;
+
+    this.board.placeGoblin(this.goblin, nextPosition);
+    this.render('Catch the goblin!');
+  }
+
+  render(status = 'Ready') {
+    this.scoreBoard.update({
+      score: this.score,
+      misses: this.misses,
+      status,
+    });
+  }
+}
